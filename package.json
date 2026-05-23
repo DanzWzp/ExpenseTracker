@@ -1,0 +1,42 @@
+{
+  "name": "expense-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare && prisma generate",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "@vueuse/core": "^11.1.0",
+    "chart.js": "^4.4.4",
+    "date-fns": "^3.6.0",
+    "vue-chartjs": "^5.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@heroicons/vue": "^2.1.5",
+    "@nuxt/devtools": "^1.5.0",
+    "@types/node": "^22.7.4",
+    "@nuxtjs/supabase": "^1.4.0",
+    "@nuxtjs/tailwindcss": "^6.12.1",
+    "@vueuse/nuxt": "^11.1.0",
+    "nuxt": "^3.13.2",
+    "prisma": "^5.20.0",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.8",
+    "vue-tsc": "^2.1.6"
+  }
+}

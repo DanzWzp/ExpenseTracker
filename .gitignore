@@ -1,0 +1,32 @@
+# Nuxt
+.nuxt
+.output
+.data
+dist
+.cache
+
+# Dependencies
+node_modules
+
+# Logs
+*.log
+logs
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Prisma
+prisma/*.db
+prisma/migrations/dev.db*
+
+# Editor / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
