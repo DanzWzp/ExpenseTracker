@@ -33,6 +33,7 @@ Aplikasi pencatat pengeluaran modern berbahasa Indonesia, dibangun dengan **Nuxt
 - 📱 **Responsif penuh** (mobile-first) dengan toast notifikasi
 - ♿ **Aksesibilitas**: modal bisa ditutup dengan **Esc**, *focus* otomatis, **scroll-lock** body saat modal terbuka
 - 🧪 **Unit test** (Vitest): 33 test untuk formatters, validators, constants, period & toast
+- 📲 **PWA**: bisa **di-install di Android/desktop** (manifest + service worker + ikon), tombol **Install App** di navbar, dukungan offline dasar
 
 ## 🧪 Testing
 
@@ -41,6 +42,18 @@ npm test          # jalankan semua unit test sekali
 npm run test:watch  # mode watch
 ```
 Test berada di folder `tests/` dan mencakup util & composable murni (tanpa perlu DB/jaringan).
+
+## 📲 Install sebagai Aplikasi (PWA)
+
+Aplikasi ini adalah **PWA** — bisa dipasang ke layar utama Android/iOS atau sebagai app desktop.
+
+**Penting:** Android hanya mengizinkan install dari halaman **HTTPS** (atau `localhost` di perangkat itu sendiri). Membuka `localhost:3000` dari HP **tidak** bisa karena bukan HTTPS dan beda perangkat. Pilihannya:
+
+1. **Deploy** ke Vercel/Netlify (otomatis HTTPS) → buka URL-nya di **Chrome Android** → menu ⋮ → **"Install app" / "Tambahkan ke Layar Utama"**.
+2. **Tunnel HTTPS** untuk uji cepat dari HP: `npx localtunnel --port 3000` (atau `ngrok http 3000`) → buka URL `https://…` yang diberikan di HP.
+3. **Desktop**: cukup buka `http://localhost:3000` di Chrome/Edge → ikon **install** muncul di address bar (localhost dianggap aman).
+
+Saat browser menawarkan instalasi, tombol **"Install App"** juga muncul otomatis di navbar aplikasi.
 
 ---
 

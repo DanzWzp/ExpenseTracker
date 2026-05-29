@@ -8,6 +8,15 @@
     <h1 class="text-base font-semibold text-gray-900 dark:text-white sm:text-lg">{{ pageTitle }}</h1>
 
     <div class="ml-auto flex items-center gap-1 sm:gap-2">
+      <!-- Tombol install PWA (muncul saat browser menawarkan instalasi) -->
+      <button
+        v-if="pwa?.showInstallPrompt && !pwa?.isPWAInstalled"
+        class="btn-primary px-3 py-1.5 text-sm"
+        @click="pwa?.install()"
+      >
+        <ArrowDownTrayIcon class="h-4 w-4" /> <span class="hidden sm:inline">Install App</span>
+      </button>
+
       <!-- Toggle dark mode -->
       <button class="btn-ghost p-2" :aria-label="isDark ? 'Mode terang' : 'Mode gelap'" @click="toggle">
         <component :is="isDark ? SunIcon : MoonIcon" class="h-5 w-5" />
@@ -25,9 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { Bars3Icon, SunIcon, MoonIcon } from '@heroicons/vue/24/outline'
+import { Bars3Icon, SunIcon, MoonIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 
 defineEmits<{ 'toggle-sidebar': [] }>()
+
+// Integrasi PWA dari @vite-pwa/nuxt (undefined saat SSR / sebelum siap).
+const pwa = useNuxtApp().$pwa
 
 const route = useRoute()
 const { displayName } = useAuth()

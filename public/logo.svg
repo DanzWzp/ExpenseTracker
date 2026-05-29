@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <!-- Latar full-bleed (aman untuk ikon maskable) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- Banknote -->
+  <rect x="104" y="168" width="304" height="176" rx="22" fill="#ffffff"/>
+  <rect x="104" y="168" width="304" height="176" rx="22" fill="none" stroke="#DBEAFE" stroke-width="2"/>
+  <!-- Koin / lingkaran tengah -->
+  <circle cx="256" cy="256" r="52" fill="none" stroke="#2563EB" stroke-width="16"/>
+  <!-- Garis vertikal (kesan simbol mata uang) -->
+  <rect x="248" y="214" width="16" height="84" rx="8" fill="#2563EB"/>
+</svg>
