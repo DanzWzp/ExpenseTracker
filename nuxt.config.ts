@@ -16,7 +16,7 @@ export default defineNuxtConfig({
       login: '/login',
       callback: '/confirm',
       // Halaman yang boleh diakses tanpa login
-      exclude: ['/register', '/confirm'],
+      exclude: ['/register', '/confirm', '/forgot-password', '/reset-password'],
     },
   },
 

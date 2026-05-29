@@ -41,6 +41,13 @@ export function useAuth() {
     if (error) throw error
   }
 
+  /** Kirim email tautan reset kata sandi ke alamat user. */
+  async function resetPassword(email: string) {
+    const redirectTo = import.meta.client ? `${window.location.origin}/reset-password` : undefined
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    if (error) throw error
+  }
+
   async function updateProfile(payload: {
     displayName?: string
     avatarUrl?: string
@@ -69,6 +76,7 @@ export function useAuth() {
     register,
     login,
     logout,
+    resetPassword,
     updateProfile,
   }
 }

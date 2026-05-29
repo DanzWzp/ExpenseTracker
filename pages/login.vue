@@ -18,7 +18,12 @@
       </div>
 
       <div>
-        <label class="label" for="password">Kata Sandi</label>
+        <div class="flex items-center justify-between">
+          <label class="label" for="password">Kata Sandi</label>
+          <NuxtLink to="/forgot-password" class="mb-1 text-xs font-medium text-primary hover:underline">
+            Lupa sandi?
+          </NuxtLink>
+        </div>
         <div class="relative">
           <input
             id="password"
