@@ -9,20 +9,32 @@
     <!-- Tautan valid: form kata sandi baru -->
     <template v-else-if="ready">
       <h2 class="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Buat kata sandi baru</h2>
-      <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Masukkan kata sandi baru untuk akunmu.</p>
+      <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+        <template v-if="email">Untuk akun <span class="font-medium text-gray-700 dark:text-gray-200">{{ email }}</span>. </template>
+        Masukkan kata sandi baru untuk akunmu.
+      </p>
 
       <form class="space-y-4" @submit.prevent="onSubmit">
         <div>
           <label class="label" for="password">Kata Sandi Baru</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            class="input"
-            placeholder="Minimal 6 karakter"
-            autocomplete="new-password"
-            required
-          />
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              :type="show ? 'text' : 'password'"
+              class="input pr-10"
+              placeholder="Minimal 6 karakter"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              @click="show = !show"
+            >
+              <component :is="show ? EyeSlashIcon : EyeIcon" class="h-5 w-5" />
+            </button>
+          </div>
           <p v-if="passwordError" class="form-error">{{ passwordError }}</p>
         </div>
 
@@ -44,7 +56,11 @@
           {{ errorMsg }}
         </p>
 
-        <button type="submit" class="btn-primary w-full" :disabled="loading || !!passwordError || !!confirmError || !password">
+        <button
+          type="submit"
+          class="btn-primary w-full"
+          :disabled="loading || !!passwordError || !!confirmError || !password || !confirm"
+        >
           <span v-if="loading" class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           {{ loading ? 'Menyimpan...' : 'Simpan Kata Sandi' }}
         </button>
@@ -58,7 +74,7 @@
       </div>
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Tautan tidak valid</h2>
       <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-        Tautan reset mungkin sudah kedaluwarsa atau pernah dipakai. Silakan minta tautan baru.
+        {{ linkError || 'Tautan reset mungkin sudah kedaluwarsa atau pernah dipakai. Silakan minta tautan baru.' }}
       </p>
       <NuxtLink to="/forgot-password" class="btn-primary mt-6 w-full">Minta Tautan Baru</NuxtLink>
       <NuxtLink to="/login" class="mt-2 block text-sm font-medium text-primary hover:underline">Kembali ke masuk</NuxtLink>
@@ -67,6 +83,8 @@
 </template>
 
 <script setup lang="ts">
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+
 definePageMeta({ layout: 'auth' })
 
 const supabase = useSupabaseClient()
@@ -77,37 +95,74 @@ const toast = useToast()
 
 const checking = ref(true)
 const ready = ref(false)
+const linkError = ref('')
 const password = ref('')
 const confirm = ref('')
+const show = ref(false)
 const loading = ref(false)
 const errorMsg = ref('')
 
+const email = computed(() => user.value?.email ?? '')
 const passwordError = computed(() => (password.value && password.value.length < 6 ? 'Minimal 6 karakter' : ''))
 const confirmError = computed(() => (confirm.value && confirm.value !== password.value ? 'Kata sandi tidak cocok' : ''))
 
-// Sesi pemulihan terbentuk → tampilkan form.
+function markReady() {
+  ready.value = true
+  checking.value = false
+}
+
+// Sesi pemulihan terbentuk (lewat user ref) → tampilkan form.
 watchEffect(() => {
-  if (user.value) {
-    ready.value = true
-    checking.value = false
-  }
+  if (user.value) markReady()
 })
 
+// Cari pesan error yang dikirim Supabase di query (?error=) atau hash (#error=).
+function readLinkError(): string {
+  if (route.query.error_description) return String(route.query.error_description)
+  if (route.query.error) return String(route.query.error)
+  if (import.meta.client && window.location.hash) {
+    const h = new URLSearchParams(window.location.hash.slice(1))
+    return h.get('error_description') || h.get('error') || ''
+  }
+  return ''
+}
+
+let stopAuthListener: (() => void) | null = null
+
 onMounted(async () => {
-  try {
-    // Alur PKCE: tukar ?code= menjadi sesi pemulihan.
-    const code = route.query.code as string | undefined
-    if (code) {
-      await supabase.auth.exchangeCodeForSession(code)
+  // Tangkap error tautan (mis. kedaluwarsa) → langsung tampilkan state gagal.
+  const err = readLinkError()
+  if (err) {
+    linkError.value = err.replace(/\+/g, ' ')
+    checking.value = false
+    return
+  }
+
+  // Dengarkan event pemulihan Supabase (cara paling andal mendeteksi tautan reset).
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+      markReady()
     }
+  })
+  stopAuthListener = () => data.subscription.unsubscribe()
+
+  // Alur PKCE: tukar ?code= menjadi sesi pemulihan.
+  try {
+    const code = route.query.code as string | undefined
+    if (code) await supabase.auth.exchangeCodeForSession(code)
     // Alur implicit (token di hash) ditangani otomatis oleh detectSessionInUrl.
   } catch {
-    /* abaikan; status sesi diperiksa di bawah */
+    /* status sesi diperiksa di bawah */
   }
-  // Beri waktu sesi terbentuk, lalu hentikan status "memverifikasi".
+
+  // Fallback: jika setelah beberapa detik belum ada sesi, anggap tautan tidak valid.
   setTimeout(() => {
     checking.value = false
-  }, 2000)
+  }, 2500)
+})
+
+onUnmounted(() => {
+  stopAuthListener?.()
 })
 
 async function onSubmit() {
@@ -117,7 +172,7 @@ async function onSubmit() {
   try {
     const { error } = await supabase.auth.updateUser({ password: password.value })
     if (error) throw error
-    toast.success('Kata sandi berhasil diperbarui.')
+    toast.success('Kata sandi berhasil diperbarui. Selamat datang kembali!')
     await router.replace('/')
   } catch (e: unknown) {
     errorMsg.value = (e as { message?: string })?.message || 'Gagal menyimpan kata sandi. Coba lagi.'
